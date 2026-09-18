@@ -373,7 +373,7 @@ document.getElementById("switchArbitro").addEventListener("click", () => {
 pintarSeleccion();
 
 // ---------- Configuración del servidor en la nube ----------
-const SERVIDOR_WS = "wss://score.patiopadel.uy";
+const SERVIDOR_WS = "wss://marcador-padel-server.onrender.com";
 // La cancha se identifica por parámetro en la URL: ?cancha=cancha1
 const CANCHA = new URLSearchParams(window.location.search).get("cancha") || "cancha1";
 
