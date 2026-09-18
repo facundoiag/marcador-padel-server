@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unirse a un partido — Patio Padel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --court-bg: #0c2418;
+    --lime: #d4ff3f;
+    --off-white: #f3f5ef;
+    --muted: #93ab9e;
+    --card-bg: #10301f;
+    --border: rgba(212,255,63,0.18);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background: radial-gradient(circle at 50% -10%, #123722, #061109 75%);
+    color: var(--off-white);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding: 40px 20px;
+  }
+  .eyebrow{
+    font-size: 12px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  h1{
+    font-family:'Oswald', sans-serif;
+    font-weight: 700;
+    font-size: 28px;
+    text-transform: uppercase;
+    margin-bottom: 30px;
+    text-align:center;
+  }
+  .card{
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 24px;
+    width: 100%;
+    max-width: 380px;
+    margin-bottom: 20px;
+    text-align:center;
+  }
+  .card label{
+    display:block;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+  input[type="text"]{
+    width:100%;
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(0,0,0,0.25);
+    color: var(--off-white);
+    font-size: 20px;
+    text-align:center;
+    font-family: 'Oswald', sans-serif;
+    letter-spacing: 0.1em;
+    margin-bottom: 16px;
+  }
+  input[type="text"]:focus{ outline: none; border-color: var(--lime); }
+  button{
+    width:100%;
+    padding: 16px;
+    border-radius: 14px;
+    border: none;
+    background: var(--lime);
+    color: #0c2418;
+    font-family:'Oswald', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    cursor:pointer;
+  }
+  .separador{
+    display:flex;
+    align-items:center;
+    gap: 12px;
+    width: 100%;
+    max-width: 380px;
+    margin: 4px 0 20px;
+    color: var(--muted);
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .separador::before, .separador::after{
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: rgba(255,255,255,0.1);
+  }
+  .instrucciones{
+    font-size: 13px;
+    color: var(--muted);
+    text-align:center;
+    max-width: 340px;
+    line-height: 1.5;
+  }
+  .error{
+    color: #ff6b47;
+    font-size: 12px;
+    margin-top: -6px;
+    margin-bottom: 12px;
+    min-height: 14px;
+  }
+</style>
+</head>
+<body>
+
+<div class="eyebrow">Patio Padel</div>
+<h1>Unirse a un partido</h1>
+
+<div class="card">
+  <label for="codigo">Código de tu cancha</label>
+  <input type="text" id="codigo" placeholder="Ej: cancha1" maxlength="20" autocomplete="off">
+  <div class="error" id="error"></div>
+  <button id="continuar">Continuar</button>
+</div>
+
+<div class="separador">o</div>
+
+<p class="instrucciones">
+  Escaneá el QR que aparece en la pantalla de tu cancha, o el que está
+  impreso al lado del vidrio — los dos te llevan directo a la
+  configuración del partido.
+</p>
+
+<script>
+document.getElementById("continuar").addEventListener("click", () => {
+  const codigo = document.getElementById("codigo").value.trim();
+  const errorEl = document.getElementById("error");
+  if (!codigo) {
+    errorEl.textContent = "Ingresá el código de tu cancha";
+    return;
+  }
+  window.location.href = "/config?cancha=" + encodeURIComponent(codigo);
+});
+
+document.getElementById("codigo").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") document.getElementById("continuar").click();
+});
+</script>
+</body>
+</html>

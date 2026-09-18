@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Historial de partidos — Patio Padel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0c2418;
+    --lime: #d4ff3f;
+    --off-white: #f3f5ef;
+    --muted: #93ab9e;
+    --card-bg: #10301f;
+    --border: rgba(212,255,63,0.18);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background: radial-gradient(circle at 50% -10%, #123722, #061109 75%);
+    color: var(--off-white);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    padding: 32px 20px 60px;
+  }
+  .eyebrow{
+    font-size: 12px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align:center;
+    margin-bottom: 6px;
+  }
+  h1{
+    font-family:'Oswald', sans-serif;
+    font-weight: 700;
+    font-size: 26px;
+    text-transform: uppercase;
+    text-align:center;
+    margin-bottom: 24px;
+  }
+  .contenedor{
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  .partido{
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 18px 20px;
+    margin-bottom: 14px;
+  }
+  .partido-header{
+    display:flex;
+    justify-content: space-between;
+    align-items:flex-start;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .jugadores{
+    font-family:'Oswald', sans-serif;
+    font-weight: 600;
+    font-size: 17px;
+    text-transform: uppercase;
+  }
+  .jugadores .ganador{ color: var(--lime); }
+  .meta{
+    font-size: 12px;
+    color: var(--muted);
+    text-align:right;
+  }
+  .sets-fila{
+    display:flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .set-box{
+    background: rgba(0,0,0,0.2);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 13px;
+    text-align:center;
+  }
+  .set-box .resultado{
+    font-family:'Oswald', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+  }
+  .set-box .duracion{
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .vacio{
+    text-align:center;
+    color: var(--muted);
+    padding: 40px 20px;
+  }
+  .cancha-tag{
+    display:inline-block;
+    background: rgba(212,255,63,0.1);
+    color: var(--lime);
+    border-radius: 999px;
+    padding: 2px 10px;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+</style>
+</head>
+<body>
+
+<div class="eyebrow">Patio Padel</div>
+<h1>Historial de partidos</h1>
+
+<div class="contenedor" id="lista">
+  <p class="vacio">Cargando...</p>
+</div>
+
+<script>
+function formatearFecha(iso){
+  if (!iso) return "";
+  const f = new Date(iso);
+  return f.toLocaleDateString("es-UY", { day: "2-digit", month: "2-digit", year: "numeric" }) +
+         " " + f.toLocaleTimeString("es-UY", { hour: "2-digit", minute: "2-digit" });
+}
+
+function formatearDuracion(seg){
+  if (seg === null || seg === undefined) return "";
+  const min = Math.round(seg / 60);
+  return min + " min";
+}
+
+async function cargarHistorial(){
+  const lista = document.getElementById("lista");
+  try {
+    const res = await fetch("/api/partidos?limite=50");
+    const partidos = await res.json();
+
+    if (!partidos.length) {
+      lista.innerHTML = '<p class="vacio">Todavía no hay partidos jugados.</p>';
+      return;
+    }
+
+    lista.innerHTML = partidos.map(p => {
+      const ganadorNombre = p.ganador === "A" ? p.nombre_a : (p.ganador === "B" ? p.nombre_b : null);
+      const setsTexto = (p.sets || []).map(s => {
+        const marcador = s.tb_a !== null && s.tb_a !== undefined
+          ? `${s.games_a}-${s.games_b} (TB ${s.tb_a}-${s.tb_b})`
+          : `${s.games_a}-${s.games_b}`;
+        return `<div class="set-box">
+          <div class="resultado">Set ${s.numero_set}: ${marcador}</div>
+          <div class="duracion">${formatearDuracion(s.duracion_seg)}</div>
+        </div>`;
+      }).join("");
+
+      return `
+        <div class="partido">
+          <div class="cancha-tag">${p.cancha}</div>
+          <div class="partido-header">
+            <div class="jugadores">
+              ${p.nombre_a || "Equipo A"} <span style="color:var(--muted);font-weight:400;">vs</span> ${p.nombre_b || "Equipo B"}
+              ${ganadorNombre ? `<div style="font-size:12px;" class="ganador">Ganó: ${ganadorNombre}</div>` : ""}
+            </div>
+            <div class="meta">
+              ${formatearFecha(p.fecha_inicio)}<br>
+              ${p.duracion_total_seg ? "Duración total: " + formatearDuracion(p.duracion_total_seg) : "En curso"}
+            </div>
+          </div>
+          <div class="sets-fila">${setsTexto || '<span style="color:var(--muted); font-size:13px;">Sin sets registrados todavía</span>'}</div>
+        </div>
+      `;
+    }).join("");
+  } catch(e) {
+    lista.innerHTML = '<p class="vacio">No se pudo cargar el historial.</p>';
+  }
+}
+
+cargarHistorial();
+</script>
+</body>
+</html>

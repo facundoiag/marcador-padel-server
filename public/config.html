@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Patio Padel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --court-bg: #0c2418;
+    --lime: #d4ff3f;
+    --off-white: #f3f5ef;
+    --muted: #93ab9e;
+    --card-bg: #10301f;
+    --border: rgba(212,255,63,0.18);
+    --alert: #ff6b47;
+  }
+  *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color: transparent;}
+  html,body{height:100%;}
+  body{
+    background: radial-gradient(circle at 50% -10%, #123722, #061109 75%);
+    color: var(--off-white);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    padding: 28px 18px 40px;
+    user-select:none;
+  }
+  .eyebrow{
+    font-size: 12px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align:center;
+    margin-bottom: 6px;
+  }
+  h1{
+    font-family:'Oswald', sans-serif;
+    font-weight: 700;
+    font-size: 26px;
+    text-align:center;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    margin-bottom: 24px;
+  }
+  .card{
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  label{
+    display:block;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  input[type="text"]{
+    width:100%;
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(0,0,0,0.25);
+    color: var(--off-white);
+    font-size: 16px;
+    font-family: 'Inter', sans-serif;
+    margin-bottom: 16px;
+  }
+  input[type="text"]:last-child{ margin-bottom: 0; }
+  input[type="text"]:focus{ outline: none; border-color: var(--lime); }
+
+  .opciones{ display:flex; flex-wrap: wrap; gap: 10px; }
+  .pill{
+    flex: 1;
+    min-width: 130px;
+    text-align:center;
+    padding: 12px 10px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(0,0,0,0.2);
+    font-size: 14px;
+    font-weight: 500;
+    cursor:pointer;
+    user-select:none;
+    transition: all 0.15s ease;
+  }
+  .pill.activo{
+    border-color: var(--lime);
+    background: rgba(212,255,63,0.12);
+    color: var(--lime);
+    font-weight: 600;
+  }
+
+  .switch-row{ display:flex; align-items:center; justify-content: space-between; padding: 4px 2px; }
+  .switch{
+    position:relative; width: 48px; height: 28px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 999px; cursor:pointer;
+    transition: background 0.2s ease; flex-shrink:0;
+  }
+  .switch.on{ background: var(--lime); }
+  .switch::after{
+    content:""; position:absolute; top: 3px; left: 3px;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: #fff; transition: transform 0.2s ease;
+  }
+  .switch.on::after{ transform: translateX(20px); }
+
+  button#guardar{
+    width:100%; padding: 16px; border-radius: 14px; border: none;
+    background: var(--lime); color: #0c2418;
+    font-family:'Oswald', sans-serif; font-weight: 700; font-size: 16px;
+    letter-spacing: 0.04em; text-transform: uppercase; cursor:pointer; margin-top: 4px;
+  }
+  button#guardar:active{ opacity: 0.85; }
+
+  .estado{ text-align:center; font-size: 13px; color: var(--muted); margin-top: 14px; min-height: 18px; }
+  .estado.exito{ color: var(--lime); }
+
+  /* ---------- Vista de control (modo árbitro) ---------- */
+  #vistaControl{ display:none; }
+
+  .estado-conexion{ text-align:center; font-size: 11px; color: var(--muted); margin-bottom: 14px; }
+  .estado-conexion.ok{ color: var(--lime); }
+
+  .marcador-lectura{
+    text-align:center;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 18px;
+    margin-bottom: 16px;
+  }
+  .marcador-lectura .modo{
+    font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--lime); margin-bottom: 6px;
+  }
+  .marcador-lectura .linea{
+    font-family:'Oswald', sans-serif; font-size: 34px; font-weight:700;
+    display:flex; justify-content:center; align-items:center; gap: 16px;
+  }
+  .marcador-lectura .linea span.sep{ font-size: 18px; color: var(--muted); }
+  .marcador-lectura .subinfo{
+    font-size: 13px; color: var(--muted); margin-top: 8px;
+    display:flex; justify-content:center; gap: 14px;
+  }
+  .marcador-lectura .deuce{
+    font-size: 12px; color: var(--alert); letter-spacing: 0.08em;
+    text-transform: uppercase; margin-top: 6px; min-height: 16px;
+  }
+
+  .panel-equipo{
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 16px;
+    margin-bottom: 14px;
+  }
+  .panel-equipo .nombre{
+    font-family:'Oswald', sans-serif; font-weight:600; font-size: 17px;
+    text-transform: uppercase; letter-spacing: 0.04em; text-align:center; margin-bottom: 12px;
+  }
+  .botones-fila{ display:flex; gap: 10px; }
+  button.btn-sumar, button.btn-restar{
+    border:none; border-radius: 14px; font-family:'Oswald', sans-serif;
+    font-weight:700; letter-spacing:0.04em; text-transform:uppercase;
+    cursor:pointer; padding: 18px 0;
+  }
+  button.btn-sumar{ flex: 2.2; background: var(--lime); color: #0c2418; font-size: clamp(18px, 5vw, 24px); }
+  button.btn-sumar:active{ opacity:0.85; }
+  button.btn-restar{
+    flex: 1; background: rgba(255,107,71,0.12); border: 1px solid rgba(255,107,71,0.4);
+    color: var(--alert); font-size: 12px;
+  }
+  button.btn-restar:active{ background: rgba(255,107,71,0.25); }
+
+  .link-volver{
+    display:block; text-align:center; margin-top: 6px;
+    color: var(--muted); font-size: 12px; letter-spacing: 0.05em; cursor:pointer;
+  }
+</style>
+</head>
+<body>
+
+<!-- ======= VISTA 1: Configuración del partido ======= -->
+<div id="vistaConfig">
+  <div class="eyebrow">Patio Padel <span id="eyebrowCanchaConfig" style="color:var(--lime);"></span></div>
+  <h1>Configurar partido</h1>
+
+  <div class="card">
+    <label style="margin-bottom:4px;">Pareja A</label>
+    <input type="text" id="jugador1A" placeholder="Jugador 1" maxlength="16" style="margin-bottom:10px;">
+    <input type="text" id="jugador2A" placeholder="Jugador 2" maxlength="16">
+  </div>
+
+  <div class="card">
+    <label style="margin-bottom:4px;">Pareja B</label>
+    <input type="text" id="jugador1B" placeholder="Jugador 1" maxlength="16" style="margin-bottom:10px;">
+    <input type="text" id="jugador2B" placeholder="Jugador 2" maxlength="16">
+  </div>
+
+  <div class="card">
+    <label>Modo de punto</label>
+    <div class="opciones" id="opcionesPunto">
+      <div class="pill" data-valor="true">Punto de oro</div>
+      <div class="pill" data-valor="false">Ventaja</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <label>Formato del partido</label>
+    <div class="opciones" id="opcionesSets">
+      <div class="pill" data-valor="1">1 set</div>
+      <div class="pill" data-valor="3">Mejor de 3</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <label>Juegos por set</label>
+    <div class="opciones" id="opcionesGamesPerSet">
+      <div class="pill" data-valor="6">6 juegos (estándar)</div>
+      <div class="pill" data-valor="5">5 juegos (corto)</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="switch-row">
+      <label style="margin:0;">Tie-break en juegos iguales</label>
+      <div class="switch" id="switchTiebreak"></div>
+    </div>
+  </div>
+
+  <div class="card" id="cardDesempate">
+    <label>Si llega a 1 set por lado</label>
+    <div class="opciones" id="opcionesDesempate">
+      <div class="pill" data-valor="set">Jugar 3er set</div>
+      <div class="pill" data-valor="superTiebreak">Super tie-break a 10</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <label>Conteo de puntos</label>
+    <div class="opciones" id="opcionesConteo">
+      <div class="pill" data-valor="puntos">Todos los puntos</div>
+      <div class="pill" data-valor="juegos">Solo juegos</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <label>Cambio de campo</label>
+    <div class="opciones" id="opcionesCambioLado">
+      <div class="pill" data-valor="impares">Regla oficial</div>
+      <div class="pill" data-valor="finSet">Solo al final del set</div>
+      <div class="pill" data-valor="nunca">No cambiar</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="switch-row">
+      <label style="margin:0;">Modo árbitro (controlo yo desde acá)</label>
+      <div class="switch" id="switchArbitro"></div>
+    </div>
+  </div>
+
+  <button id="guardar">Guardar configuración</button>
+  <div class="estado" id="estadoConfig"></div>
+</div>
+
+<!-- ======= VISTA 2: Control del árbitro ======= -->
+<div id="vistaControl">
+  <div class="eyebrow">Patio Padel · Modo árbitro <span id="eyebrowCanchaControl" style="color:var(--lime);"></span></div>
+  <div class="estado-conexion" id="estadoConexion">Conectando…</div>
+
+  <div class="marcador-lectura">
+    <div class="modo" id="modoTexto">Punto de oro · Al mejor de 3</div>
+    <div class="linea">
+      <span id="lecturaA">0</span>
+      <span class="sep">·</span>
+      <span id="lecturaB">0</span>
+    </div>
+    <div class="subinfo">
+      <span id="gamesLectura">Games 0-0</span>
+      <span id="setsLectura">Sets 0-0</span>
+    </div>
+    <div class="deuce" id="deuceLectura"></div>
+  </div>
+
+  <div class="panel-equipo">
+    <div class="nombre" id="nombreControlA">Equipo A</div>
+    <div class="botones-fila">
+      <button class="btn-sumar" id="btnSumarA">+ Punto</button>
+      <button class="btn-restar" id="btnRestarA">− Deshacer</button>
+    </div>
+  </div>
+  <div class="panel-equipo">
+    <div class="nombre" id="nombreControlB">Equipo B</div>
+    <div class="botones-fila">
+      <button class="btn-sumar" id="btnSumarB">+ Punto</button>
+      <button class="btn-restar" id="btnRestarB">− Deshacer</button>
+    </div>
+  </div>
+
+  <div class="link-volver" id="volverAConfig">Editar configuración del partido</div>
+</div>
+
+<script>
+// =========================================================
+// Configuración del formulario (Vista 1)
+// =========================================================
+let seleccion = {
+  goldenPoint: true,
+  bestOf: 3,
+  tiebreak: true,
+  gamesPerSet: 6,
+  desempate: "set",
+  conteoModo: "puntos",
+  cambioLado: "impares",
+  modoArbitro: false
+};
+
+function pintarSeleccion(){
+  document.querySelectorAll("#opcionesPunto .pill").forEach(p => {
+    p.classList.toggle("activo", p.dataset.valor === String(seleccion.goldenPoint));
+  });
+  document.querySelectorAll("#opcionesSets .pill").forEach(p => {
+    p.classList.toggle("activo", p.dataset.valor === String(seleccion.bestOf));
+  });
+  document.querySelectorAll("#opcionesGamesPerSet .pill").forEach(p => {
+    p.classList.toggle("activo", p.dataset.valor === String(seleccion.gamesPerSet));
+  });
+  document.querySelectorAll("#opcionesDesempate .pill").forEach(p => {
+    p.classList.toggle("activo", p.dataset.valor === seleccion.desempate);
+  });
+  document.querySelectorAll("#opcionesConteo .pill").forEach(p => {
+    p.classList.toggle("activo", p.dataset.valor === seleccion.conteoModo);
+  });
+  document.querySelectorAll("#opcionesCambioLado .pill").forEach(p => {
+    p.classList.toggle("activo", p.dataset.valor === seleccion.cambioLado);
+  });
+  document.getElementById("switchTiebreak").classList.toggle("on", seleccion.tiebreak);
+  document.getElementById("switchArbitro").classList.toggle("on", seleccion.modoArbitro);
+  document.getElementById("cardDesempate").style.display = seleccion.bestOf === 3 ? "block" : "none";
+}
+
+document.querySelectorAll("#opcionesPunto .pill").forEach(p => {
+  p.addEventListener("click", () => { seleccion.goldenPoint = p.dataset.valor === "true"; pintarSeleccion(); });
+});
+document.querySelectorAll("#opcionesSets .pill").forEach(p => {
+  p.addEventListener("click", () => { seleccion.bestOf = parseInt(p.dataset.valor, 10); pintarSeleccion(); });
+});
+document.querySelectorAll("#opcionesGamesPerSet .pill").forEach(p => {
+  p.addEventListener("click", () => { seleccion.gamesPerSet = parseInt(p.dataset.valor, 10); pintarSeleccion(); });
+});
+document.querySelectorAll("#opcionesDesempate .pill").forEach(p => {
+  p.addEventListener("click", () => { seleccion.desempate = p.dataset.valor; pintarSeleccion(); });
+});
+document.querySelectorAll("#opcionesConteo .pill").forEach(p => {
+  p.addEventListener("click", () => { seleccion.conteoModo = p.dataset.valor; pintarSeleccion(); });
+});
+document.querySelectorAll("#opcionesCambioLado .pill").forEach(p => {
+  p.addEventListener("click", () => { seleccion.cambioLado = p.dataset.valor; pintarSeleccion(); });
+});
+document.getElementById("switchTiebreak").addEventListener("click", () => {
+  seleccion.tiebreak = !seleccion.tiebreak; pintarSeleccion();
+});
+document.getElementById("switchArbitro").addEventListener("click", () => {
+  seleccion.modoArbitro = !seleccion.modoArbitro; pintarSeleccion();
+});
+
+pintarSeleccion();
+
+// ---------- Configuración del servidor en la nube ----------
+const SERVIDOR_WS = "wss://score.patiopadel.uy";
+// La cancha se identifica por parámetro en la URL: ?cancha=cancha1
+const CANCHA = new URLSearchParams(window.location.search).get("cancha") || "cancha1";
+
+// ---------- Nombre de la cancha (viene directo de la URL) ----------
+document.getElementById("eyebrowCanchaConfig").textContent = "· " + CANCHA;
+document.getElementById("eyebrowCanchaControl").textContent = "· " + CANCHA;
+
+// =========================================================
+// Motor de puntaje (Vista 2 - solo se usa si es modo árbitro)
+// =========================================================
+let config = {
+  nombreA: "Equipo A", nombreB: "Equipo B",
+  goldenPoint: true, bestOf: 3, tiebreak: true,
+  gamesPerSet: 6, conteoModo: "puntos", desempate: "set"
+};
+let estado = {
+  puntosA:0, puntosB:0, gamesA:0, gamesB:0, setsA:0, setsB:0,
+  enTiebreak:false, esSuperTiebreak:false, objetivoTiebreak:7, tbA:0, tbB:0
+};
+
+const ETIQUETAS_PUNTO = ["0", "15", "30", "40"];
+
+function etiquetaPunto(puntos, oponente, esGolden){
+  if (estado.enTiebreak) return String(puntos);
+  if (puntos >= 3 && oponente >= 3) {
+    if (esGolden) return "40";
+    if (puntos === oponente) return "40";
+    return puntos > oponente ? "AD" : "40";
+  }
+  return ETIQUETAS_PUNTO[Math.min(puntos, 3)];
+}
+
+function textoDeuce(propio, oponente){
+  if (estado.enTiebreak) return "";
+  if (propio >= 3 && oponente >= 3) {
+    if (config.goldenPoint) return propio === oponente ? "Punto de oro" : "";
+    if (propio === oponente) return "Deuce";
+    return propio > oponente ? "Ventaja" : "";
+  }
+  return "";
+}
+
+function ganarJuego(ganador){
+  estado.puntosA = 0; estado.puntosB = 0;
+  if (ganador === "A") estado.gamesA++; else estado.gamesB++;
+  revisarFinSet();
+}
+
+function revisarFinGame(){
+  const a = estado.puntosA, b = estado.puntosB;
+  let ganador = null;
+  if (config.goldenPoint && a >= 3 && b >= 3) {
+    if (a > b) ganador = "A"; else if (b > a) ganador = "B";
+  } else {
+    if (a >= 4 && a - b >= 2) ganador = "A";
+    if (b >= 4 && b - a >= 2) ganador = "B";
+  }
+  if (ganador) { ganarJuego(ganador); return true; }
+  return false;
+}
+
+function iniciarTiebreak(esSuper){
+  estado.enTiebreak = true;
+  estado.esSuperTiebreak = esSuper;
+  estado.objetivoTiebreak = esSuper ? 10 : 7;
+  estado.tbA = 0; estado.tbB = 0;
+}
+
+function revisarFinSet(){
+  const ga = estado.gamesA, gb = estado.gamesB;
+  const objetivo = config.gamesPerSet;
+  if (config.tiebreak && ga === objetivo && gb === objetivo && !estado.enTiebreak) {
+    iniciarTiebreak(false);
+    return false;
+  }
+  let ganadorSet = null;
+  if (ga >= objetivo && ga - gb >= 2) ganadorSet = "A";
+  if (gb >= objetivo && gb - ga >= 2) ganadorSet = "B";
+  if (ganadorSet) {
+    if (ganadorSet === "A") estado.setsA++; else estado.setsB++;
+    estado.gamesA = 0; estado.gamesB = 0;
+    const terminoPartido = revisarFinPartido();
+    if (!terminoPartido && config.bestOf === 3 && config.desempate === "superTiebreak" &&
+        estado.setsA === 1 && estado.setsB === 1) {
+      iniciarTiebreak(true);
+    }
+    return true;
+  }
+  return false;
+}
+
+function revisarFinTiebreak(){
+  const a = estado.tbA, b = estado.tbB;
+  const objetivo = estado.objetivoTiebreak;
+  let ganador = null;
+  if (a >= objetivo && a - b >= 2) ganador = "A";
+  if (b >= objetivo && b - a >= 2) ganador = "B";
+  if (ganador) {
+    const esSuper = estado.esSuperTiebreak;
+    if (!esSuper) {
+      if (ganador === "A") { estado.gamesA = objetivo; estado.setsA++; }
+      else { estado.gamesB = objetivo; estado.setsB++; }
+    } else {
+      if (ganador === "A") estado.setsA++; else estado.setsB++;
+    }
+    estado.gamesA = 0; estado.gamesB = 0;
+    estado.enTiebreak = false;
+    estado.esSuperTiebreak = false;
+    estado.objetivoTiebreak = 7;
+    estado.tbA = 0; estado.tbB = 0;
+    revisarFinPartido();
+    return true;
+  }
+  return false;
+}
+
+function revisarFinPartido(){
+  const setsParaGanar = Math.ceil(config.bestOf / 2);
+  return estado.setsA >= setsParaGanar || estado.setsB >= setsParaGanar;
+}
+
+function aplicarSuma(equipo){
+  if (config.conteoModo === "juegos" && !estado.enTiebreak) {
+    ganarJuego(equipo);
+  } else if (estado.enTiebreak) {
+    if (equipo === "A") estado.tbA++; else estado.tbB++;
+    revisarFinTiebreak();
+  } else {
+    if (equipo === "A") estado.puntosA++; else estado.puntosB++;
+    revisarFinGame();
+  }
+  renderControl();
+}
+
+function aplicarResta(equipo){
+  if (config.conteoModo === "juegos" && !estado.enTiebreak) {
+    if (equipo === "A" && estado.gamesA > 0) estado.gamesA--;
+    if (equipo === "B" && estado.gamesB > 0) estado.gamesB--;
+  } else if (estado.enTiebreak) {
+    if (equipo === "A" && estado.tbA > 0) estado.tbA--;
+    if (equipo === "B" && estado.tbB > 0) estado.tbB--;
+  } else {
+    if (equipo === "A" && estado.puntosA > 0) estado.puntosA--;
+    if (equipo === "B" && estado.puntosB > 0) estado.puntosB--;
+  }
+  renderControl();
+}
+
+function renderControl(){
+  document.getElementById("nombreControlA").textContent = config.nombreA;
+  document.getElementById("nombreControlB").textContent = config.nombreB;
+
+  let modo = (config.goldenPoint ? "Punto de oro" : "Ventaja") + " · Al mejor de " + config.bestOf;
+  if (estado.enTiebreak) modo = estado.esSuperTiebreak ? "SUPER TIE-BREAK (a 10)" : "TIE-BREAK";
+  document.getElementById("modoTexto").textContent = modo;
+
+  if (config.conteoModo === "juegos") {
+    document.getElementById("lecturaA").textContent = estado.gamesA;
+    document.getElementById("lecturaB").textContent = estado.gamesB;
+  } else {
+    document.getElementById("lecturaA").textContent = estado.enTiebreak ? estado.tbA : etiquetaPunto(estado.puntosA, estado.puntosB, config.goldenPoint);
+    document.getElementById("lecturaB").textContent = estado.enTiebreak ? estado.tbB : etiquetaPunto(estado.puntosB, estado.puntosA, config.goldenPoint);
+  }
+
+  document.getElementById("gamesLectura").textContent = "Games " + estado.gamesA + "-" + estado.gamesB;
+  document.getElementById("setsLectura").textContent = "Sets " + estado.setsA + "-" + estado.setsB;
+  document.getElementById("deuceLectura").textContent = config.conteoModo === "juegos" ? "" : (textoDeuce(estado.puntosA, estado.puntosB) || textoDeuce(estado.puntosB, estado.puntosA));
+}
+
+// =========================================================
+// Cambiar entre las 2 vistas (misma app, mismo WebSocket)
+// =========================================================
+function mostrarVistaControl(){
+  document.getElementById("vistaConfig").style.display = "none";
+  document.getElementById("vistaControl").style.display = "block";
+  renderControl();
+}
+function mostrarVistaConfig(){
+  document.getElementById("vistaControl").style.display = "none";
+  document.getElementById("vistaConfig").style.display = "block";
+}
+document.getElementById("volverAConfig").addEventListener("click", mostrarVistaConfig);
+
+// =========================================================
+// WebSocket compartido por las dos vistas
+// =========================================================
+let ws;
+function conectarWS(){
+  try {
+    ws = new WebSocket(SERVIDOR_WS + "/ws?cancha=" + encodeURIComponent(CANCHA));
+
+    ws.onopen = () => {
+      document.getElementById("estadoConfig").textContent = "Conectado al marcador";
+      document.getElementById("estadoConexion").textContent = "Conectado";
+      document.getElementById("estadoConexion").classList.add("ok");
+    };
+    ws.onclose = () => {
+      document.getElementById("estadoConfig").textContent = "Sin conexión — reintentando…";
+      document.getElementById("estadoConexion").textContent = "Reconectando…";
+      document.getElementById("estadoConexion").classList.remove("ok");
+      setTimeout(conectarWS, 1500);
+    };
+    ws.onmessage = (msg) => {
+      try {
+        const data = JSON.parse(msg.data);
+        if (data.tipo === "config") {
+          config.nombreA = data.nombreA || config.nombreA;
+          config.nombreB = data.nombreB || config.nombreB;
+          config.goldenPoint = data.goldenPoint;
+          config.bestOf = data.bestOf;
+          config.tiebreak = data.tiebreak;
+          config.gamesPerSet = data.gamesPerSet || 6;
+          config.conteoModo = data.conteoModo || "puntos";
+          config.desempate = data.desempate || "set";
+          estado = {puntosA:0,puntosB:0,gamesA:0,gamesB:0,setsA:0,setsB:0,enTiebreak:false,esSuperTiebreak:false,objetivoTiebreak:7,tbA:0,tbB:0};
+          if (document.getElementById("vistaControl").style.display === "block") renderControl();
+        } else if (data.equipo && data.accion && data.origen !== "arbitro") {
+          // Un sensor de la cancha marcó un punto: si estamos en modo árbitro, lo reflejamos
+          if (data.accion === "suma") aplicarSuma(data.equipo);
+          if (data.accion === "resta") aplicarResta(data.equipo);
+        }
+      } catch(e) { console.error("Mensaje inválido", e); }
+    };
+  } catch(e) {
+    document.getElementById("estadoConfig").textContent = "Sin conexión";
+  }
+}
+conectarWS();
+
+function enviarEventoControl(equipo, accion){
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ equipo, accion, origen: "arbitro" }));
+  }
+  if (accion === "suma") aplicarSuma(equipo); else aplicarResta(equipo);
+}
+document.getElementById("btnSumarA").addEventListener("click", () => enviarEventoControl("A", "suma"));
+document.getElementById("btnRestarA").addEventListener("click", () => enviarEventoControl("A", "resta"));
+document.getElementById("btnSumarB").addEventListener("click", () => enviarEventoControl("B", "suma"));
+document.getElementById("btnRestarB").addEventListener("click", () => enviarEventoControl("B", "resta"));
+
+// =========================================================
+// Guardar configuración
+// =========================================================
+document.getElementById("guardar").addEventListener("click", () => {
+  const j1A = document.getElementById("jugador1A").value.trim() || "Jugador 1";
+  const j2A = document.getElementById("jugador2A").value.trim() || "Jugador 2";
+  const j1B = document.getElementById("jugador1B").value.trim() || "Jugador 1";
+  const j2B = document.getElementById("jugador2B").value.trim() || "Jugador 2";
+  const nombreA = j1A + " / " + j2A;
+  const nombreB = j1B + " / " + j2B;
+
+  const payload = {
+    tipo: "config",
+    nombreA, nombreB,
+    goldenPoint: seleccion.goldenPoint,
+    bestOf: seleccion.bestOf,
+    tiebreak: seleccion.tiebreak,
+    gamesPerSet: seleccion.gamesPerSet,
+    desempate: seleccion.desempate,
+    conteoModo: seleccion.conteoModo,
+    cambioLado: seleccion.cambioLado,
+    modoArbitro: seleccion.modoArbitro
+  };
+
+  // Sincronizamos el motor de puntaje local con lo recién guardado,
+  // sin esperar a que vuelva el eco del WebSocket.
+  config.nombreA = nombreA; config.nombreB = nombreB;
+  config.goldenPoint = seleccion.goldenPoint;
+  config.bestOf = seleccion.bestOf;
+  config.tiebreak = seleccion.tiebreak;
+  config.gamesPerSet = seleccion.gamesPerSet;
+  config.conteoModo = seleccion.conteoModo;
+  config.desempate = seleccion.desempate;
+  estado = {puntosA:0,puntosB:0,gamesA:0,gamesB:0,setsA:0,setsB:0,enTiebreak:false,esSuperTiebreak:false,objetivoTiebreak:7,tbA:0,tbB:0};
+
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify(payload));
+    const estadoEl = document.getElementById("estadoConfig");
+    estadoEl.textContent = "Configuración enviada al marcador ✓";
+    estadoEl.classList.add("exito");
+  } else {
+    document.getElementById("estadoConfig").textContent = "Sin conexión, esperá y probá de nuevo";
+  }
+
+  if (seleccion.modoArbitro) mostrarVistaControl();
+});
+</script>
+</body>
+</html>
