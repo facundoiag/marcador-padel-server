@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marcador de Pádel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --azul-1: #0ea1e8;
+    --azul-2: #0a6fae;
+    --azul-3: #064a78;
+    --blanco: #ffffff;
+    --linea: #cbe86a;
+    --texto-caja: #0a3a5c;
+    --muted: rgba(255,255,255,0.72);
+    --alert: #ff8a65;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%;}
+  body{
+    background: radial-gradient(circle at 50% -10%, var(--azul-1), var(--azul-3) 85%);
+    color: var(--blanco);
+    font-family: 'Inter', sans-serif;
+    overflow: hidden;
+    height:100vh;
+    display:flex;
+    flex-direction:column;
+  }
+
+  /* ========================= VISTA INICIO (QR grande + marcas) ========================= */
+  #vistaInicio{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:space-between;
+    height:100vh;
+    padding: 5vh 4vw;
+    text-align:center;
+  }
+  #vistaInicio .logo-club{
+    font-family:'Oswald', sans-serif;
+    font-weight:700;
+    font-size: clamp(36px, 5.5vw, 68px);
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+  }
+  #vistaInicio .subtitulo-club{
+    font-size: clamp(16px, 1.8vw, 24px);
+    color: var(--muted);
+    letter-spacing:0.15em;
+    text-transform:uppercase;
+    margin-top:8px;
+  }
+  .bloque-qr{
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 28px;
+    padding: 5vh 5vw;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap: 20px;
+  }
+  .bloque-qr img{
+    width: min(42vh, 380px);
+    height: min(42vh, 380px);
+    background: #fff;
+    border-radius: 16px;
+    padding: 18px;
+  }
+  .bloque-qr .texto-qr{
+    font-family:'Oswald', sans-serif;
+    font-weight:600;
+    font-size: clamp(22px, 3vw, 38px);
+    text-transform:uppercase;
+    letter-spacing:0.03em;
+  }
+  .bloque-qr .sub-qr{
+    font-size: clamp(14px, 1.6vw, 20px);
+    color: var(--muted);
+  }
+  .patrocinadores{
+    width:100%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap: 3vw;
+    flex-wrap:wrap;
+  }
+  .patrocinador-slot{
+    width: min(16vw, 160px);
+    height: min(9vw, 90px);
+    background: rgba(255,255,255,0.07);
+    border: 1px dashed rgba(255,255,255,0.35);
+    border-radius: 12px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    padding: 8px;
+    text-align:center;
+  }
+  .patrocinador-slot img{
+    max-width:100%;
+    max-height:100%;
+    object-fit:contain;
+  }
+
+  /* ========================= VISTA PARTIDO (tabla de puntaje) ========================= */
+  #vistaPartido{ display:none; height:100vh; flex-direction:column; }
+
+  header{
+    display:grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items:center;
+    padding: 22px 4vw 8px;
+    position:relative;
+  }
+  .marca-central{
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-self:center;
+    padding: 10px 60px 12px;
+  }
+  .cinta-diagonal{
+    position:absolute;
+    top:-16px; left:-70px; right:-70px; bottom:-14px;
+    background: linear-gradient(100deg,
+      rgba(255,255,255,0) 0%,
+      rgba(255,255,255,0.16) 38%,
+      rgba(255,255,255,0.16) 62%,
+      rgba(255,255,255,0) 100%);
+    clip-path: polygon(10% 0, 100% 0, 90% 100%, 0% 100%);
+    z-index:-1;
+    border-radius: 6px;
+  }
+  .logo-img{
+    max-height: clamp(38px, 5vw, 72px);
+    max-width: 280px;
+    object-fit: contain;
+    margin-bottom: 4px;
+  }
+  .logo-texto{
+    font-family:'Oswald', sans-serif;
+    font-weight:700;
+    font-size: clamp(22px, 3vw, 42px);
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+  }
+  .reloj{
+    font-family:'Oswald', sans-serif;
+    font-weight:700;
+    font-size: clamp(34px, 4.8vw, 72px);
+  }
+  .reloj-izq{ justify-self:start; }
+  .reloj-der{ justify-self:end; }
+  .modo-pill{
+    font-size: 12px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    background: rgba(255,255,255,0.14);
+    padding: 5px 14px;
+    border-radius: 999px;
+    margin-top: 8px;
+  }
+  .boton-audio{
+    position:absolute;
+    top: 10px; right: 4vw;
+    font-size: 15px;
+    background: rgba(255,255,255,0.14);
+    padding: 6px 10px;
+    border-radius: 999px;
+    cursor:pointer;
+  }
+
+  main{
+    flex:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: 0 4vw;
+  }
+
+  .tabla-marcador{
+    width:100%;
+    max-width: 1750px;
+    display:grid;
+    grid-template-columns: 90px 1.4fr 0.55fr 0.55fr 0.55fr 1fr;
+    row-gap: 10px;
+    column-gap: 20px;
+  }
+  .th{
+    font-size: clamp(18px, 1.8vw, 26px);
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color: var(--muted);
+    text-align:center;
+    padding-bottom: 16px;
+  }
+  .fila{
+    display:contents;
+  }
+  .celda{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'Oswald', sans-serif;
+    font-weight:600;
+    font-size: clamp(56px, 8.5vw, 150px);
+  }
+  .celda-ball{
+    font-size: clamp(32px, 3.6vw, 56px);
+    opacity: 0;
+  }
+  .celda-ball.activa{ opacity: 1; }
+  .celda-nombre{
+    justify-content:flex-start;
+    flex-direction:column;
+    align-items:flex-start;
+    gap: 6px;
+    font-size: clamp(34px, 4.4vw, 60px);
+    text-transform:uppercase;
+    line-height:1.15;
+    padding: 14px 0;
+  }
+  .celda-punto{
+    background: var(--blanco);
+    color: var(--texto-caja);
+    border: 4px solid var(--linea);
+    border-radius: 20px;
+    min-width: 150px;
+    padding: 10px 16px;
+  }
+  .separador-fila{
+    grid-column: 1 / -1;
+    height: 3px;
+    background: var(--linea);
+    margin: 10px 0;
+    opacity: 0.85;
+  }
+
+  .info-inferior{
+    display:flex;
+    justify-content:center;
+    gap: 32px;
+    padding: 10px 0 24px;
+  }
+  .info-item{
+    font-size: clamp(13px, 1.3vw, 18px);
+    color: var(--muted);
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+  }
+  .info-item .valor{ color: var(--blanco); font-weight:600; }
+  .banner-deuce{
+    text-align:center;
+    font-family:'Oswald', sans-serif;
+    font-size: clamp(18px, 2.2vw, 30px);
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color: var(--alert);
+    min-height: 34px;
+  }
+
+  .overlay-cambio{
+    position: fixed;
+    inset: 0;
+    background: rgba(2,20,35,0.94);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+    z-index: 999;
+  }
+  .overlay-cambio.visible{ opacity: 1; }
+  .overlay-cambio .icono{ font-size: clamp(40px, 6vw, 64px); }
+  .overlay-cambio .titulo{
+    font-family: 'Oswald', sans-serif;
+    font-weight: 700;
+    font-size: clamp(36px, 6vw, 72px);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--blanco);
+    text-align:center;
+  }
+  .overlay-cambio .subtitulo{
+    font-size: clamp(14px, 1.6vw, 20px);
+    color: var(--linea);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+
+<!-- ======= VISTA INICIO: QR grande + marcas del club ======= -->
+<div id="vistaInicio">
+  <div>
+    <div class="logo-club">Patio Padel</div>
+    <div class="subtitulo-club" id="canchaInicio">Cancha 1</div>
+  </div>
+
+  <div class="bloque-qr">
+    <img id="qrGrande" alt="QR configuración">
+    <div class="texto-qr">Escaneá para configurar tu partido</div>
+    <div class="sub-qr">Nombres, modo de juego y quién arranca</div>
+  </div>
+
+  <div class="patrocinadores" id="patrocinadores">
+    <!-- Se completa solo desde el array `patrocinadores` en el script.
+         Para sumar el logo de un sponsor del club, agregá su URL de imagen
+         ahí abajo — mientras esté vacío, se muestran estos espacios de ejemplo. -->
+    <div class="patrocinador-slot">Espacio para marca del club</div>
+    <div class="patrocinador-slot">Espacio para marca del club</div>
+    <div class="patrocinador-slot">Espacio para marca del club</div>
+  </div>
+</div>
+
+<!-- ======= VISTA PARTIDO: tabla de puntaje ======= -->
+<div id="vistaPartido">
+  <header>
+    <div class="reloj reloj-izq" id="relojActual">--:--</div>
+
+    <div class="marca-central">
+      <div class="cinta-diagonal"></div>
+      <img id="logoClub" class="logo-img" alt="Patio Padel" style="display:none;">
+      <div class="logo-texto" id="logoTexto">Patio Padel</div>
+      <span class="modo-pill" id="modoPill">Punto de oro</span>
+    </div>
+
+    <div class="reloj reloj-der" id="relojPartido">00:00</div>
+
+    <span class="boton-audio" id="botonAudio">🔊</span>
+  </header>
+
+  <main>
+    <div style="width:100%;">
+      <div class="tabla-marcador">
+        <div class="th"></div>
+        <div class="th"></div>
+        <div class="th">Set 1</div>
+        <div class="th">Set 2</div>
+        <div class="th">Set 3</div>
+        <div class="th"></div>
+
+        <div class="fila">
+          <div class="celda celda-ball" id="ballA">🎾</div>
+          <div class="celda celda-nombre" id="nombreA">Equipo A</div>
+          <div class="celda" id="set1A">0</div>
+          <div class="celda" id="set2A">0</div>
+          <div class="celda" id="set3A">0</div>
+          <div class="celda celda-punto" id="puntoA">0</div>
+        </div>
+
+        <div class="separador-fila"></div>
+
+        <div class="fila">
+          <div class="celda celda-ball" id="ballB">🎾</div>
+          <div class="celda celda-nombre" id="nombreB">Equipo B</div>
+          <div class="celda" id="set1B">0</div>
+          <div class="celda" id="set2B">0</div>
+          <div class="celda" id="set3B">0</div>
+          <div class="celda celda-punto" id="puntoB">0</div>
+        </div>
+      </div>
+
+      <div class="banner-deuce" id="banerDeuce"></div>
+
+      <div class="info-inferior">
+        <div class="info-item">Sets: <span class="valor" id="infoSets">0-0</span></div>
+        <div class="info-item" id="infoEstadoConexion">Conectando…</div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="overlay-cambio" id="overlayCambioLado">
+  <div class="icono">🔄</div>
+  <div class="titulo">Cambio de campo</div>
+  <div class="subtitulo">Patio Padel</div>
+</div>
+
+<script>
+// ---------- Config por defecto ----------
+let config = {
+  nombreA: "Equipo A",
+  nombreB: "Equipo B",
+  goldenPoint: true,
+  bestOf: 3,
+  tiebreak: true,
+  gamesPerSet: 6,
+  cambioLado: "impares",
+  conteoModo: "puntos",
+  desempate: "set",
+  modoArbitro: false
+};
+
+let estado = {
+  puntosA: 0, puntosB: 0,
+  gamesA: 0, gamesB: 0,
+  setsA: 0, setsB: 0,
+  enTiebreak: false,
+  esSuperTiebreak: false,
+  objetivoTiebreak: 7,
+  tbA: 0, tbB: 0,
+  historialSets: [],   // sets ya terminados: [{gamesA, gamesB}, ...]
+  sirve: "A"           // quién saca el juego actual (aproximado: alterna cada juego)
+};
+
+// ---------- Marcas del club para la vista de inicio ----------
+// Completá este array con las URLs de los logos de los sponsors/marcas
+// del club para que reemplacen los espacios de ejemplo. Ej:
+// const patrocinadores = ["https://tudominio.com/logo1.png", "https://tudominio.com/logo2.png"];
+const patrocinadores = [];
+
+// ---------- Logo del club (header, arriba de la tabla de puntaje) ----------
+// Pegá acá la URL del PNG blanco del logo de Patio Padel una vez que lo
+// tengas. Mientras esté vacío, se muestra el texto "Patio Padel" en su lugar.
+// Ej: const LOGO_CLUB_URL = "https://tudominio.com/logo-patio-padel-blanco.png";
+const LOGO_CLUB_URL = "";
+
+// ---------- Cronómetro para guardar duración de cada set y del partido ----------
+let tiempoInicioPartido = null;
+let tiempoInicioSet = null;
+let numeroSetActual = 1;
+
+function enviarPersistencia(mensaje){
+  if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(mensaje));
+}
+
+const ETIQUETAS_PUNTO = ["0", "15", "30", "40"];
+
+function etiquetaPunto(puntos, oponente, esGolden){
+  if (estado.enTiebreak) return String(puntos);
+  if (puntos >= 3 && oponente >= 3) {
+    if (esGolden) return "40";
+    if (puntos === oponente) return "40";
+    return puntos > oponente ? "AD" : "40";
+  }
+  return ETIQUETAS_PUNTO[Math.min(puntos, 3)];
+}
+
+function textoDeuce(propio, oponente){
+  if (estado.enTiebreak) return "";
+  if (propio >= 3 && oponente >= 3) {
+    if (config.goldenPoint) return propio === oponente ? "Punto de oro" : "";
+    if (propio === oponente) return "Deuce";
+    return propio > oponente ? "Ventaja" : "";
+  }
+  return "";
+}
+
+// ---------- Voz ----------
+let audioActivado = true;
+function hablar(texto){
+  if (!audioActivado || !("speechSynthesis" in window)) return;
+  try {
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(texto);
+    u.lang = "es-ES";
+    u.rate = 1;
+    window.speechSynthesis.speak(u);
+  } catch(e) { console.warn("No se pudo anunciar por voz:", e); }
+}
+
+function anunciarPunto(){
+  const dA = textoDeuce(estado.puntosA, estado.puntosB);
+  const dB = textoDeuce(estado.puntosB, estado.puntosA);
+  if (dA === "Ventaja") { hablar("Ventaja, " + config.nombreA); return; }
+  if (dB === "Ventaja") { hablar("Ventaja, " + config.nombreB); return; }
+  if (dA) { hablar(dA); return; }
+  const eA = etiquetaPunto(estado.puntosA, estado.puntosB, config.goldenPoint);
+  const eB = etiquetaPunto(estado.puntosB, estado.puntosA, config.goldenPoint);
+  hablar(eA + " a " + eB);
+}
+function anunciarPuntoTiebreak(){ hablar(estado.tbA + " a " + estado.tbB); }
+function anunciarJuego(ganador){
+  const nombre = ganador === "A" ? config.nombreA : config.nombreB;
+  hablar("Juego, " + nombre + ". " + estado.gamesA + " a " + estado.gamesB);
+}
+function anunciarSet(ganador){
+  const nombre = ganador === "A" ? config.nombreA : config.nombreB;
+  hablar("Set para " + nombre + ". " + estado.setsA + " a " + estado.setsB + " en sets.");
+}
+function anunciarPartido(ganador){
+  const nombre = ganador === "A" ? config.nombreA : config.nombreB;
+  hablar("Partido para " + nombre + "!");
+}
+
+// ---------- Aviso de cambio de campo ----------
+let timeoutCambioLado = null;
+function mostrarCambioDeLado(){
+  const overlay = document.getElementById("overlayCambioLado");
+  overlay.classList.add("visible");
+  hablar("Cambio de campo");
+  clearTimeout(timeoutCambioLado);
+  timeoutCambioLado = setTimeout(() => overlay.classList.remove("visible"), 4500);
+}
+function evaluarCambioDeLado(sumaGamesAntesDeReset, terminoSet){
+  if (config.cambioLado === "nunca") return;
+  if (config.cambioLado === "impares" && sumaGamesAntesDeReset % 2 === 1) { mostrarCambioDeLado(); return; }
+  if (config.cambioLado === "finSet" && terminoSet) mostrarCambioDeLado();
+}
+
+// ---------- Suma / resta de puntos ----------
+function sumarPunto(equipo){
+  if (config.conteoModo === "juegos" && !estado.enTiebreak) {
+    ganarJuego(equipo);
+    render();
+    return;
+  }
+  if (estado.enTiebreak) {
+    if (equipo === "A") estado.tbA++; else estado.tbB++;
+    const termino = revisarFinTiebreak();
+    if (!termino) anunciarPuntoTiebreak();
+  } else {
+    if (equipo === "A") estado.puntosA++; else estado.puntosB++;
+    const termino = revisarFinGame();
+    if (!termino) anunciarPunto();
+  }
+  render();
+}
+
+function restarPunto(equipo){
+  if (config.conteoModo === "juegos" && !estado.enTiebreak) {
+    if (equipo === "A" && estado.gamesA > 0) estado.gamesA--;
+    if (equipo === "B" && estado.gamesB > 0) estado.gamesB--;
+    hablar(estado.gamesA + " a " + estado.gamesB);
+    render();
+    return;
+  }
+  if (estado.enTiebreak) {
+    if (equipo === "A" && estado.tbA > 0) estado.tbA--;
+    if (equipo === "B" && estado.tbB > 0) estado.tbB--;
+    anunciarPuntoTiebreak();
+  } else {
+    if (equipo === "A" && estado.puntosA > 0) estado.puntosA--;
+    if (equipo === "B" && estado.puntosB > 0) estado.puntosB--;
+    anunciarPunto();
+  }
+  render();
+}
+
+function ganarJuego(ganador){
+  estado.puntosA = 0; estado.puntosB = 0;
+  if (ganador === "A") estado.gamesA++; else estado.gamesB++;
+  estado.sirve = estado.sirve === "A" ? "B" : "A"; // el saque alterna cada juego
+  const sumaGames = estado.gamesA + estado.gamesB;
+  const terminoSet = revisarFinSet();
+  evaluarCambioDeLado(sumaGames, terminoSet);
+  if (!terminoSet) anunciarJuego(ganador);
+}
+
+function revisarFinGame(){
+  const a = estado.puntosA, b = estado.puntosB;
+  let ganador = null;
+  if (config.goldenPoint && a >= 3 && b >= 3) {
+    if (a > b) ganador = "A"; else if (b > a) ganador = "B";
+  } else {
+    if (a >= 4 && a - b >= 2) ganador = "A";
+    if (b >= 4 && b - a >= 2) ganador = "B";
+  }
+  if (ganador) { ganarJuego(ganador); return true; }
+  return false;
+}
+
+function iniciarTiebreak(esSuper){
+  estado.enTiebreak = true;
+  estado.esSuperTiebreak = esSuper;
+  estado.objetivoTiebreak = esSuper ? 10 : 7;
+  estado.tbA = 0; estado.tbB = 0;
+  hablar(esSuper ? "Super tie-break, a 10 puntos" : "Tie-break");
+}
+
+function guardarSetEnHistorial(gamesA, gamesB){
+  estado.historialSets.push({ gamesA, gamesB });
+}
+
+function revisarFinSet(){
+  const ga = estado.gamesA, gb = estado.gamesB;
+  const objetivo = config.gamesPerSet;
+
+  if (config.tiebreak && ga === objetivo && gb === objetivo && !estado.enTiebreak) {
+    iniciarTiebreak(false);
+    return false;
+  }
+
+  let ganadorSet = null;
+  if (ga >= objetivo && ga - gb >= 2) ganadorSet = "A";
+  if (gb >= objetivo && gb - ga >= 2) ganadorSet = "B";
+
+  if (ganadorSet) {
+    const duracionSeg = tiempoInicioSet ? Math.round((Date.now() - tiempoInicioSet) / 1000) : null;
+    enviarPersistencia({
+      tipo: "set_completado", numeroSet: numeroSetActual,
+      gamesA: ga, gamesB: gb, tbA: null, tbB: null, ganador: ganadorSet, duracionSeg
+    });
+    guardarSetEnHistorial(ga, gb);
+    numeroSetActual++;
+    tiempoInicioSet = Date.now();
+
+    if (ganadorSet === "A") estado.setsA++; else estado.setsB++;
+    estado.gamesA = 0; estado.gamesB = 0;
+    const terminoPartido = revisarFinPartido();
+    if (!terminoPartido) anunciarSet(ganadorSet);
+    else anunciarPartido(ganadorSet);
+
+    if (terminoPartido) {
+      const duracionTotalSeg = tiempoInicioPartido ? Math.round((Date.now() - tiempoInicioPartido) / 1000) : null;
+      enviarPersistencia({ tipo: "partido_completado", ganador: ganadorSet, setsA: estado.setsA, setsB: estado.setsB, duracionTotalSeg });
+    }
+
+    if (!terminoPartido && config.bestOf === 3 && config.desempate === "superTiebreak" &&
+        estado.setsA === 1 && estado.setsB === 1) {
+      iniciarTiebreak(true);
+    }
+    return true;
+  }
+  return false;
+}
+
+function revisarFinTiebreak(){
+  const a = estado.tbA, b = estado.tbB;
+  const objetivo = estado.objetivoTiebreak;
+  let ganador = null;
+  if (a >= objetivo && a - b >= 2) ganador = "A";
+  if (b >= objetivo && b - a >= 2) ganador = "B";
+  if (ganador) {
+    const esSuper = estado.esSuperTiebreak;
+    let sumaGames = 0;
+    let gamesAGuardar = estado.gamesA, gamesBGuardar = estado.gamesB;
+    if (!esSuper) {
+      if (ganador === "A") { estado.gamesA = objetivo; estado.setsA++; }
+      else { estado.gamesB = objetivo; estado.setsB++; }
+      gamesAGuardar = estado.gamesA; gamesBGuardar = estado.gamesB;
+      sumaGames = estado.gamesA + estado.gamesB;
+    } else {
+      if (ganador === "A") estado.setsA++; else estado.setsB++;
+      gamesAGuardar = 0; gamesBGuardar = 0;
+    }
+
+    const duracionSeg = tiempoInicioSet ? Math.round((Date.now() - tiempoInicioSet) / 1000) : null;
+    enviarPersistencia({
+      tipo: "set_completado", numeroSet: numeroSetActual,
+      gamesA: gamesAGuardar, gamesB: gamesBGuardar, tbA: a, tbB: b, ganador, duracionSeg
+    });
+    guardarSetEnHistorial(gamesAGuardar, gamesBGuardar);
+    numeroSetActual++;
+    tiempoInicioSet = Date.now();
+
+    estado.gamesA = 0; estado.gamesB = 0;
+    estado.enTiebreak = false;
+    estado.esSuperTiebreak = false;
+    estado.objetivoTiebreak = 7;
+    estado.tbA = 0; estado.tbB = 0;
+    if (!esSuper) evaluarCambioDeLado(sumaGames, true);
+    const terminoPartido = revisarFinPartido();
+    if (!terminoPartido) anunciarSet(ganador);
+    else anunciarPartido(ganador);
+
+    if (terminoPartido) {
+      const duracionTotalSeg = tiempoInicioPartido ? Math.round((Date.now() - tiempoInicioPartido) / 1000) : null;
+      enviarPersistencia({ tipo: "partido_completado", ganador, setsA: estado.setsA, setsB: estado.setsB, duracionTotalSeg });
+    }
+    return true;
+  }
+  return false;
+}
+
+function revisarFinPartido(){
+  const setsParaGanar = Math.ceil(config.bestOf / 2);
+  return estado.setsA >= setsParaGanar || estado.setsB >= setsParaGanar;
+}
+
+// ---------- Valor a mostrar en cada columna Set 1/2/3 ----------
+function valorSet(equipo, numSet){
+  if (numSet < numeroSetActual) {
+    const s = estado.historialSets[numSet - 1];
+    if (!s) return 0;
+    return equipo === "A" ? s.gamesA : s.gamesB;
+  }
+  if (numSet === numeroSetActual) {
+    return equipo === "A" ? estado.gamesA : estado.gamesB;
+  }
+  return 0;
+}
+
+function render(){
+  document.getElementById("nombreA").textContent = config.nombreA;
+  document.getElementById("nombreB").textContent = config.nombreB;
+
+  let etiquetaModo = (config.goldenPoint ? "Punto de oro" : "Ventaja") + " · Mejor de " + config.bestOf;
+  if (estado.enTiebreak) etiquetaModo = estado.esSuperTiebreak ? "SUPER TIE-BREAK" : "TIE-BREAK";
+  document.getElementById("modoPill").textContent = etiquetaModo;
+
+  if (config.conteoModo === "juegos") {
+    document.getElementById("puntoA").textContent = estado.gamesA;
+    document.getElementById("puntoB").textContent = estado.gamesB;
+  } else {
+    document.getElementById("puntoA").textContent = estado.enTiebreak ? estado.tbA : etiquetaPunto(estado.puntosA, estado.puntosB, config.goldenPoint);
+    document.getElementById("puntoB").textContent = estado.enTiebreak ? estado.tbB : etiquetaPunto(estado.puntosB, estado.puntosA, config.goldenPoint);
+  }
+
+  for (let n = 1; n <= 3; n++) {
+    document.getElementById("set" + n + "A").textContent = valorSet("A", n);
+    document.getElementById("set" + n + "B").textContent = valorSet("B", n);
+  }
+
+  document.getElementById("infoSets").textContent = estado.setsA + "-" + estado.setsB;
+
+  document.getElementById("ballA").classList.toggle("activa", estado.sirve === "A");
+  document.getElementById("ballB").classList.toggle("activa", estado.sirve === "B");
+
+  const deuceTxt = config.conteoModo === "juegos" ? "" : (textoDeuce(estado.puntosA, estado.puntosB) || textoDeuce(estado.puntosB, estado.puntosA));
+  document.getElementById("banerDeuce").textContent = deuceTxt;
+}
+
+// ---------- Reloj y cronómetro del partido ----------
+function actualizarRelojes(){
+  const ahora = new Date();
+  document.getElementById("relojActual").textContent =
+    String(ahora.getHours()).padStart(2, "0") + ":" + String(ahora.getMinutes()).padStart(2, "0");
+
+  if (tiempoInicioPartido) {
+    const segTotales = Math.floor((Date.now() - tiempoInicioPartido) / 1000);
+    const mm = Math.floor(segTotales / 60);
+    const ss = segTotales % 60;
+    document.getElementById("relojPartido").textContent =
+      String(mm).padStart(2, "0") + ":" + String(ss).padStart(2, "0");
+  }
+}
+setInterval(actualizarRelojes, 1000);
+actualizarRelojes();
+
+// ---------- Cambiar entre vista de inicio y vista de partido ----------
+function mostrarVistaPartido(){
+  document.getElementById("vistaInicio").style.display = "none";
+  document.getElementById("vistaPartido").style.display = "flex";
+}
+
+// ---------- Marcas del club en la vista de inicio ----------
+function pintarPatrocinadores(){
+  if (!patrocinadores.length) return; // deja los espacios de ejemplo
+  const cont = document.getElementById("patrocinadores");
+  cont.innerHTML = "";
+  patrocinadores.forEach(url => {
+    const slot = document.createElement("div");
+    slot.className = "patrocinador-slot";
+    const img = document.createElement("img");
+    img.src = url;
+    img.alt = "Marca del club";
+    slot.appendChild(img);
+    cont.appendChild(slot);
+  });
+}
+pintarPatrocinadores();
+
+// ---------- Logo del club en el header ----------
+function pintarLogoClub(){
+  if (!LOGO_CLUB_URL) return; // deja el texto "Patio Padel"
+  const img = document.getElementById("logoClub");
+  img.src = LOGO_CLUB_URL;
+  img.style.display = "block";
+  document.getElementById("logoTexto").style.display = "none";
+}
+pintarLogoClub();
+
+// ---------- Configuración del servidor en la nube ----------
+const SERVIDOR_HTTP = "https://marcador-padel-server.onrender.com";
+const SERVIDOR_WS = "wss://marcador-padel-server.onrender.com";
+const CANCHA = new URLSearchParams(window.location.search).get("cancha") || "cancha1";
+document.getElementById("canchaInicio").textContent = CANCHA;
+
+// ---------- QR grande (vista de inicio) ----------
+function actualizarQR(){
+  try {
+    const urlConfig = SERVIDOR_HTTP + "/config?cancha=" + encodeURIComponent(CANCHA);
+    const qrImgSrc = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" + encodeURIComponent(urlConfig);
+    document.getElementById("qrGrande").src = qrImgSrc;
+  } catch(e) { console.warn("No se pudo generar el QR:", e); }
+}
+
+// ---------- WebSocket ----------
+let ws;
+function conectarWS(){
+  try {
+    ws = new WebSocket(SERVIDOR_WS + "/ws?cancha=" + encodeURIComponent(CANCHA));
+
+    ws.onopen = () => {
+      document.getElementById("infoEstadoConexion").textContent = "Conectado";
+    };
+    ws.onclose = () => {
+      document.getElementById("infoEstadoConexion").textContent = "Reconectando…";
+      setTimeout(conectarWS, 1500);
+    };
+    ws.onerror = () => {};
+    ws.onmessage = (msg) => {
+      try {
+        const data = JSON.parse(msg.data);
+        if (data.tipo === "config") {
+          config.nombreA = data.nombreA || config.nombreA;
+          config.nombreB = data.nombreB || config.nombreB;
+          config.goldenPoint = data.goldenPoint;
+          config.bestOf = data.bestOf;
+          config.tiebreak = data.tiebreak;
+          config.cambioLado = data.cambioLado || "impares";
+          config.gamesPerSet = data.gamesPerSet || 6;
+          config.conteoModo = data.conteoModo || "puntos";
+          config.desempate = data.desempate || "set";
+          config.modoArbitro = !!data.modoArbitro;
+          estado = {
+            puntosA:0,puntosB:0,gamesA:0,gamesB:0,setsA:0,setsB:0,
+            enTiebreak:false,esSuperTiebreak:false,objetivoTiebreak:7,tbA:0,tbB:0,
+            historialSets:[], sirve:"A"
+          };
+          tiempoInicioPartido = Date.now();
+          tiempoInicioSet = Date.now();
+          numeroSetActual = 1;
+          mostrarVistaPartido();
+          render();
+        } else if (data.equipo && data.accion) {
+          if (data.accion === "suma") sumarPunto(data.equipo);
+          if (data.accion === "resta") restarPunto(data.equipo);
+        }
+      } catch(e) { console.error("Mensaje inválido", e); }
+    };
+  } catch(e) {
+    document.getElementById("infoEstadoConexion").textContent = "Sin conexión";
+    console.warn("No se pudo conectar el WebSocket:", e);
+  }
+}
+
+document.getElementById("botonAudio").addEventListener("click", () => {
+  audioActivado = !audioActivado;
+  document.getElementById("botonAudio").textContent = audioActivado ? "🔊 Audio" : "🔇 Audio";
+  if (!audioActivado) window.speechSynthesis.cancel();
+});
+
+actualizarQR();
+render();
+conectarWS();
+</script>
+</body>
+</html>
